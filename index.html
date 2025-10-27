@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 천문학 개념 퀴즈 🔭</title>
+    <style>
+        /* CSS for Styling */
+        body {
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #1e88e5;
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #1e88e5;
+            padding-bottom: 10px;
+        }
+
+        .question-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+
+        .question-text {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .answer-input {
+            width: calc(100% - 130px);
+            padding: 10px;
+            font-size: 1.1em;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            transition: border-color 0.3s;
+        }
+
+        .answer-input:focus {
+            border-color: #1e88e5;
+            outline: none;
+        }
+
+        .check-button {
+            padding: 10px 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: white;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .check-button:hover {
+            background-color: #45a049;
+        }
+
+        .reveal-section {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 1.2em;
+            font-weight: bold;
+            min-height: 20px; /* 공간 확보 */
+        }
+
+        .reveal-section.correct {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .reveal-section.incorrect {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .correct-answer {
+            margin-top: 5px;
+            font-size: 1.2em;
+            color: #2e7d32;
+            display: none; /* 초기에는 숨김 */
+        }
+
+        /* 큰 폰트 설정 */
+        .question-text {
+            font-size: 1.8em;
+        }
+        .answer-input, .check-button {
+            font-size: 1.3em;
+        }
+        .reveal-section {
+            font-size: 1.4em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🚀 천문학 개념 퀴즈 🔭</h1>
+
+    <div id="quiz-list">
+        </div>
+
+    <h2 id="final-score" style="text-align: center; margin-top: 50px; color: #1e88e5; font-size: 2em; display: none;"></h2>
+</div>
+
+<script>
+    // JavaScript for Quiz Logic
+
+    const QUIZ_DATA = [
+        [cite_start]{ q: "천문학(Astronomy)은 무엇을 연구하는 학문인가요? [cite: 8]", a: ["우주", "천체와 현상"] },
+        [cite_start]{ q: "우주의 구성 요소 중 가장 큰 비율(약 68%)을 차지하는 것은 무엇인가요? [cite: 3, 5, 42, 43, 55, 56]", a: ["암흑에너지", "dark energy"] },
+        [cite_start]{ q: "태양과 지구 사이의 평균 거리를 1로 정의하는 거리 척도는 무엇인가요? [cite: 526, 527]", a: ["천문단위", "AU", "Astronomical Unit"] },
+        [cite_start]{ q: "시차 1초(1\")가 되는 천체까지의 거리를 나타내는 거리 척도는 무엇인가요? [cite: 526, 529]", a: ["파섹", "pc", "parsec"] },
+        [cite_start]{ q: "지구의 공전(지동설)을 최초로 주장했던 BC 3C 천문학자는 누구인가요? [cite: 539]", a: ["아리스타르쿠스", "aristarchus"] },
+        [cite_start]{ q: "별의 밝기를 등급으로 도입하고 지구의 세차 운동을 발견했던 BC 2C 인물은 누구인가요? [cite: 547, 548]", a: ["히페르쿠스", "히파르코스", "hipparchus"] },
+        [cite_start]{ q: "주전원(epicycle)을 도입하여 행성의 역행 운동을 설명했던 이론은 무엇인가요? [cite: 544]", a: ["주전원", "주전원 이론"] },
+        [cite_start]{ q: "튀코 브라헤의 관측 결과를 바탕으로 태양중심설을 증명하고 행성 운동의 3법칙을 발표한 학자는 누구인가요? [cite: 559]", a: ["케플러", "요하네스 케플러", "kepler"] },
+        [cite_start]{ q: "만유인력의 법칙으로 행성의 운동을 수학적으로 증명했던 과학자는 누구인가요? [cite: 562]", a: ["뉴턴", "아이작 뉴턴", "newton"] },
+        [cite_start]{ q: "연주 시차(Annual Parallax)를 최초로 측정하여 지동설을 검증했던 학자는 누구인가요? [cite: 568]", a: ["베셀", "프리드리히 빌헬름 베셀", "bessel"] },
+        [cite_start]{ q: "조선 태조 때 고구려 시대 천문도를 바탕으로 각석한 한국의 대표적인 천문도는 무엇인가요? [cite: 322, 323, 324]", a: ["천상열차분야지도"] },
+        [cite_start]{ q: "태양이 황도를 따라 천구를 일주하는 주기를 기준으로 하는 1년의 정의는 무엇인가요? [cite: 569]", a: ["태양년", "회귀년"] },
+        [cite_start]{ q: "1582년에 제정되어 현재 사용되는 역법은 무엇인가요? [cite: 433]", a: ["그레고리력", "gregorian calendar"] },
+        [cite_start]{ q: "우리나라가 도입한, 달의 삭망에 기준을 두면서 태양력에 맞춘 역법은 무엇인가요? [cite: 447, 448]", a: ["태음태양력", "lunisolar calendar"] }
+    ];
+
+    let correctCount = 0;
+    const totalQuestions = QUIZ_DATA.length;
+    
+    // 정답 확인 함수
+    function checkAnswer(index) {
+        const questionData = QUIZ_DATA[index];
+        const inputElement = document.getElementById(`input-${index}`);
+        const resultElement = document.getElementById(`result-${index}`);
+        const answerRevealElement = document.getElementById(`answer-reveal-${index}`);
+        const checkButton = document.getElementById(`check-btn-${index}`);
+        
+        const userAnswer = inputElement.value.trim().toLowerCase();
+        const correctAnswers = questionData.a.map(ans => ans.toLowerCase());
+        const isCorrect = correctAnswers.includes(userAnswer);
+
+        // 결과 영역 초기화
+        resultElement.classList.remove('correct', 'incorrect');
+        answerRevealElement.style.display = 'block';
+
+        if (isCorrect) {
+            resultElement.textContent = "🎉 정답입니다! 🎉";
+            resultElement.classList.add('correct');
+            answerRevealElement.innerHTML = `정답: ${questionData.a[0]}`;
+            
+            // 처음 맞췄을 때만 점수 증가
+            if (!checkButton.disabled) {
+                correctCount++;
+            }
+        } else {
+            resultElement.textContent = "❌ 오답입니다. ❌";
+            resultElement.classList.add('incorrect');
+            answerRevealElement.innerHTML = `정답: ${questionData.a[0]}`;
+        }
+        
+        // 버튼 비활성화 및 입력 필드 잠금
+        checkButton.disabled = true;
+        inputElement.disabled = true;
+
+        // 최종 점수 표시 업데이트
+        updateScoreDisplay();
+    }
+
+    // 최종 점수 표시 함수
+    function updateScoreDisplay() {
+        const scoreElement = document.getElementById('final-score');
+        scoreElement.textContent = `최종 점수: ${correctCount} / ${totalQuestions}점`;
+        scoreElement.style.display = 'block';
+    }
+
+    // 퀴즈 페이지 생성 함수
+    function renderQuiz() {
+        const quizListDiv = document.getElementById('quiz-list');
+        quizListDiv.innerHTML = '';
+        
+        // 문제들을 섞지 않고 순서대로 표시 (세로로 긴 페이지 스크롤)
+        QUIZ_DATA.forEach((item, index) => {
+            const section = document.createElement('div');
+            section.className = 'question-section';
+            
+            section.innerHTML = `
+                <div class="question-text">
+                    ${index + 1}. ${item.q}
+                </div>
+                <div>
+                    <input type="text" id="input-${index}" class="answer-input" placeholder="여기에 정답을 입력하세요." onkeydown="if(event.key === 'Enter') document.getElementById('check-btn-${index}').click()">
+                    <button id="check-btn-${index}" class="check-button" onclick="checkAnswer(${index})">확인하기</button>
+                </div>
+                <div id="result-${index}" class="reveal-section"></div>
+                <div id="answer-reveal-${index}" class="correct-answer"></div>
+            `;
+            quizListDiv.appendChild(section);
+        });
+    }
+
+    // 페이지 로드 시 퀴즈 생성
+    window.onload = renderQuiz;
+</script>
+
+</body>
+</html>
