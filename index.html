@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚀 천문학 개념 퀴즈 (랜덤 출제) 🔭</title>
+    <title>🚀 천문학 개념 퀴즈 (랜덤/스크롤 개선) 🔭</title>
     <style>
         /* CSS for Styling */
         body {
@@ -143,6 +143,7 @@
     
     // 원본 문장 구조와 답을 유지한 퀴즈 데이터
     const ORIGINAL_QUIZ_DATA = [
+        // 우주의 과학적 정의.docx 기반 (원본 순서 및 내용 유지)
         { q: "우주의 과학적 정의-", a: ["물질과 에너지를 일정한 규칙하에 담고있는 시공간"] },
         { q: "우주 거리 척도-", a: ["천문단위(AU), 광년, 파섹(pc)"] },
         { q: "천문단위-", a: ["지구와 태양 사이의 거리, 1.5억km"] },
@@ -256,19 +257,50 @@
         }
     }
 
-    // 이 함수는 HTML의 onclick 이벤트에서 직접 호출되므로 window 객체에 할당
-    window.checkAnswer = function(originalIndex) {
-        // shuffledQuizData를 사용하여 현재 문제 데이터 접근
-        const questionData = shuffledQuizData.find(q => q.originalIndex === originalIndex);
-        if (!questionData) return; // 데이터가 없으면 종료
+    /**
+     * 엔터 키 이벤트 핸들러: 엔터를 치면 checkAnswer를 실행하고 다음 입력 칸으로 포커스 이동 및 스크롤
+     * @param {Event} event - 키보드 이벤트 객체
+     * @param {number} originalIndex - 현재 문제의 원본 인덱스
+     */
+    function handleEnter(event, originalIndex) {
+        if (event.key === 'Enter') {
+            event.preventDefault(); // 기본 Enter 동작(폼 제출) 방지
+            
+            // 1. 정답 확인 실행
+            window.checkAnswer(originalIndex);
+            
+            // 2. 다음 문제 섹션 찾기
+            const currentItemIndexInShuffled = shuffledQuizData.findIndex(item => item.originalIndex === originalIndex);
+            const nextItemIndexInShuffled = currentItemIndexInShuffled + 1;
 
-        // DOM 요소는 고유한 originalIndex를 기반으로 접근
+            if (nextItemIndexInShuffled < shuffledQuizData.length) {
+                const nextItem = shuffledQuizData[nextItemIndexInShuffled];
+                const nextInput = document.getElementById(`input-${nextItem.originalIndex}`);
+                
+                // 3. 다음 문제 입력 필드로 포커스 이동 및 스크롤
+                if (nextInput) {
+                    nextInput.focus();
+                    // 'center'를 사용하여 이전 문제가 보이도록 화면 중앙에 다음 문제를 위치시킴
+                    const nextSection = document.getElementById(`section-${nextItem.originalIndex}`);
+                    if (nextSection) {
+                        nextSection.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
+                    }
+                }
+            }
+        }
+    }
+    window.handleEnter = handleEnter; // 전역 접근 가능하도록 설정
+
+    // 정답 확인 함수 (기존 로직 유지)
+    window.checkAnswer = function(originalIndex) {
+        const questionData = shuffledQuizData.find(q => q.originalIndex === originalIndex);
+        if (!questionData) return;
+
         const inputElement = document.getElementById(`input-${originalIndex}`);
         const resultElement = document.getElementById(`result-${originalIndex}`);
         const answerRevealElement = document.getElementById(`answer-reveal-${originalIndex}`);
         const checkButton = document.getElementById(`check-btn-${originalIndex}`);
         
-        // 이미 확인된 문제는 다시 처리하지 않음
         if (checkButton.disabled) return;
         
         const userAnswer = inputElement.value.trim().toLowerCase();
@@ -278,30 +310,22 @@
 
         const isCorrect = correctAnswers.includes(cleanedUserAnswer);
 
-        // 결과 영역 초기화
         resultElement.classList.remove('correct', 'incorrect');
         answerRevealElement.style.display = 'block';
 
         if (isCorrect) {
             resultElement.textContent = "🎉 정답입니다! 🎉";
             resultElement.classList.add('correct');
-            // 첫 번째 정답만 표시
             answerRevealElement.innerHTML = `정답: ${questionData.a[0]}`; 
-            
-            // 처음 맞췄을 때만 점수 증가
             correctCount++;
         } else {
             resultElement.textContent = "❌ 오답입니다. 정답 공개 ❌";
             resultElement.classList.add('incorrect');
-            // 모든 정답 옵션을 표시
             answerRevealElement.innerHTML = `정답: ${questionData.a.join(' / ')}`; 
         }
         
-        // 버튼 비활성화 및 입력 필드 잠금
         checkButton.disabled = true;
         inputElement.disabled = true;
-
-        // 최종 점수 표시 업데이트
         updateScoreDisplay();
     }
 
@@ -313,10 +337,7 @@
 
     // 퀴즈 페이지 생성 및 렌더링 함수
     function renderQuiz() {
-        // 1. ORIGINAL_QUIZ_DATA를 복사하고 originalIndex를 추가
         shuffledQuizData = ORIGINAL_QUIZ_DATA.map((item, index) => ({...item, originalIndex: index}));
-        
-        // 2. 문제 순서를 무작위로 섞음
         shuffleArray(shuffledQuizData);
         
         const quizListDiv = document.getElementById('quiz-list');
@@ -325,15 +346,15 @@
         shuffledQuizData.forEach((item, index) => {
             const section = document.createElement('div');
             section.className = 'question-section';
+            section.id = `section-${item.originalIndex}`; // 스크롤 타겟 ID
             
-            // 문제와 정답을 동적으로 생성 (질문 원문 그대로 사용)
-            // ID는 원본 인덱스를 사용해야 checkAnswer 함수가 정확한 데이터를 찾음
+            // onkeydown 이벤트를 사용하여 Enter 키를 감지하고 handleEnter 함수 호출
             section.innerHTML = `
                 <div class="question-text">
                     ${index + 1}. ${item.q}<span style="color: #bbb;"> [답을 입력하세요]</span>
                 </div>
                 <div class="input-group">
-                    <input type="text" id="input-${item.originalIndex}" class="answer-input" placeholder="정답을 입력하세요." onkeydown="if(event.key === 'Enter') window.checkAnswer(${item.originalIndex})">
+                    <input type="text" id="input-${item.originalIndex}" class="answer-input" placeholder="정답을 입력하세요." onkeydown="window.handleEnter(event, ${item.originalIndex})">
                     <button id="check-btn-${item.originalIndex}" class="check-button" onclick="window.checkAnswer(${item.originalIndex})">확인하기</button>
                 </div>
                 <div id="result-${item.originalIndex}" class="reveal-section"></div>
@@ -342,7 +363,6 @@
             quizListDiv.appendChild(section);
         });
 
-        // 초기 점수 표시 업데이트
         updateScoreDisplay();
     }
 
