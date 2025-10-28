@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚀 천문학 개념 퀴즈 (원문 기반) 🔭</title>
+    <title>🚀 천문학 개념 퀴즈 (랜덤 출제) 🔭</title>
     <style>
         /* CSS for Styling */
         body {
@@ -130,7 +130,7 @@
 <body>
 
 <div class="container">
-    <h1>🚀 천문학 개념 퀴즈 (원문 문항 98개) 🔭</h1>
+    <h1>🚀 천문학 개념 퀴즈 (총 98문제, 랜덤 출제) 🔭</h1>
 
     <div id="quiz-list">
         </div>
@@ -140,9 +140,9 @@
 
 <script>
     // JavaScript for Quiz Logic
-
-    const QUIZ_DATA = [
-        // 우주의 과학적 정의.docx 기반 (원본 순서 및 내용 유지)
+    
+    // 원본 문장 구조와 답을 유지한 퀴즈 데이터
+    const ORIGINAL_QUIZ_DATA = [
         { q: "우주의 과학적 정의-", a: ["물질과 에너지를 일정한 규칙하에 담고있는 시공간"] },
         { q: "우주 거리 척도-", a: ["천문단위(AU), 광년, 파섹(pc)"] },
         { q: "천문단위-", a: ["지구와 태양 사이의 거리, 1.5억km"] },
@@ -245,15 +245,28 @@
     ];
     
     let correctCount = 0;
-    const totalQuestions = QUIZ_DATA.length;
-    
+    const totalQuestions = ORIGINAL_QUIZ_DATA.length;
+    let shuffledQuizData = []; // 무작위로 섞인 데이터를 저장할 배열
+
+    // Fisher-Yates 셔플 알고리즘
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
     // 이 함수는 HTML의 onclick 이벤트에서 직접 호출되므로 window 객체에 할당
-    window.checkAnswer = function(index) {
-        const questionData = QUIZ_DATA[index];
-        const inputElement = document.getElementById(`input-${index}`);
-        const resultElement = document.getElementById(`result-${index}`);
-        const answerRevealElement = document.getElementById(`answer-reveal-${index}`);
-        const checkButton = document.getElementById(`check-btn-${index}`);
+    window.checkAnswer = function(originalIndex) {
+        // shuffledQuizData를 사용하여 현재 문제 데이터 접근
+        const questionData = shuffledQuizData.find(q => q.originalIndex === originalIndex);
+        if (!questionData) return; // 데이터가 없으면 종료
+
+        // DOM 요소는 고유한 originalIndex를 기반으로 접근
+        const inputElement = document.getElementById(`input-${originalIndex}`);
+        const resultElement = document.getElementById(`result-${originalIndex}`);
+        const answerRevealElement = document.getElementById(`answer-reveal-${originalIndex}`);
+        const checkButton = document.getElementById(`check-btn-${originalIndex}`);
         
         // 이미 확인된 문제는 다시 처리하지 않음
         if (checkButton.disabled) return;
@@ -298,26 +311,33 @@
         scoreElement.textContent = `점수: ${correctCount} / ${totalQuestions}`;
     }
 
-    // 퀴즈 페이지 생성 함수
+    // 퀴즈 페이지 생성 및 렌더링 함수
     function renderQuiz() {
+        // 1. ORIGINAL_QUIZ_DATA를 복사하고 originalIndex를 추가
+        shuffledQuizData = ORIGINAL_QUIZ_DATA.map((item, index) => ({...item, originalIndex: index}));
+        
+        // 2. 문제 순서를 무작위로 섞음
+        shuffleArray(shuffledQuizData);
+        
         const quizListDiv = document.getElementById('quiz-list');
         quizListDiv.innerHTML = '';
         
-        QUIZ_DATA.forEach((item, index) => {
+        shuffledQuizData.forEach((item, index) => {
             const section = document.createElement('div');
             section.className = 'question-section';
             
             // 문제와 정답을 동적으로 생성 (질문 원문 그대로 사용)
+            // ID는 원본 인덱스를 사용해야 checkAnswer 함수가 정확한 데이터를 찾음
             section.innerHTML = `
                 <div class="question-text">
                     ${index + 1}. ${item.q}<span style="color: #bbb;"> [답을 입력하세요]</span>
                 </div>
                 <div class="input-group">
-                    <input type="text" id="input-${index}" class="answer-input" placeholder="정답을 입력하세요." onkeydown="if(event.key === 'Enter') window.checkAnswer(${index})">
-                    <button id="check-btn-${index}" class="check-button" onclick="window.checkAnswer(${index})">확인하기</button>
+                    <input type="text" id="input-${item.originalIndex}" class="answer-input" placeholder="정답을 입력하세요." onkeydown="if(event.key === 'Enter') window.checkAnswer(${item.originalIndex})">
+                    <button id="check-btn-${item.originalIndex}" class="check-button" onclick="window.checkAnswer(${item.originalIndex})">확인하기</button>
                 </div>
-                <div id="result-${index}" class="reveal-section"></div>
-                <div id="answer-reveal-${index}" class="correct-answer"></div>
+                <div id="result-${item.originalIndex}" class="reveal-section"></div>
+                <div id="answer-reveal-${item.originalIndex}" class="correct-answer"></div>
             `;
             quizListDiv.appendChild(section);
         });
